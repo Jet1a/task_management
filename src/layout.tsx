@@ -2,6 +2,7 @@ import Navbar from "./components/Navbar";
 import { Outlet } from "react-router-dom";
 import { ModalProvider } from "./context/ModalContext";
 import GlobalModal from "./components/GlobalModal";
+import { ToasterProvider } from "./provider/ToasterProvider";
 
 const RootLayout = () => {
   return (
@@ -9,8 +10,9 @@ const RootLayout = () => {
       <Navbar />
       <main className="container mx-auto flex-grow p-4">
         <ModalProvider>
-          <Outlet />
+          <ToasterProvider />
           <GlobalModal />
+          <Outlet />
         </ModalProvider>
       </main>
     </div>

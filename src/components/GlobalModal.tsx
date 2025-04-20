@@ -2,23 +2,18 @@ import { Modal } from "antd";
 import { useModal } from "../context/ModalContext";
 
 const GlobalModal = () => {
-  const { isOpen, closeModal } = useModal();
-
-  const handleOk = () => {
-    closeModal();
-  };
+  const { isOpen, closeModal, modalContent } = useModal();
 
   return (
     <>
       <Modal
-        title="Basic Modal"
+        centered
         open={isOpen}
-        onOk={handleOk}
         onCancel={closeModal}
+        footer={null}
+        destroyOnClose
       >
-        <p>Some contents...</p>
-        <p>Some contents...</p>
-        <p>Some contents...</p>
+        {modalContent}
       </Modal>
     </>
   );

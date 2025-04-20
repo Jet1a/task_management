@@ -77,7 +77,7 @@ const Navbar = () => {
         </NavLink>
       </Flex>
 
-      <div className="p-2 ml-auto">
+      <div className="p-4 ml-auto">
         <button
           onClick={() => setIsFullWidth((prev) => !prev)}
           className="cursor-pointer opacity-50 hover:opacity-100 transition-opacity"
