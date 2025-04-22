@@ -1,25 +1,19 @@
 import {
-  FilterOutlined,
   PlusOutlined,
+  QuestionCircleOutlined,
+  SearchOutlined,
   SortAscendingOutlined,
+  SortDescendingOutlined,
 } from "@ant-design/icons";
-import {
-  Button,
-  Flex,
-  Form,
-  Input,
-  DatePicker,
-  Select,
-  Radio,
-  SelectProps,
-} from "antd";
+import { Button, Flex, Input } from "antd";
 import { format } from "date-fns";
 import { useModal } from "../context/ModalContext";
-import { CheckboxGroupProps } from "antd/es/checkbox";
-import { categories } from "../data/categories";
+
 import { useEffect, useState } from "react";
 import TaskItem from "../components/taskManagement/TaskItem";
 import toast from "react-hot-toast";
+
+import TaskForm from "../components/taskManagement/TaskForm";
 
 export type TaskType = {
   taskId: number;
@@ -30,21 +24,16 @@ export type TaskType = {
   status: string;
 };
 
-const statusOptions: CheckboxGroupProps<string>["options"] = [
-  { label: "Todo", value: "Todo" },
-  { label: "On Process", value: "On Process" },
-  { label: "Done", value: "Done" },
-];
-
-const categoryOptions: SelectProps["options"] = categories;
-
 const TaskManagementPage = () => {
   const { openModal, closeModal } = useModal();
-  const [form] = Form.useForm<TaskType>();
 
   const [tasks, setTasks] = useState<TaskType[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortDirection, setSortDirection] = useState("asc");
 
-  const minDate = new Date().toISOString();
+  const filteredTasks = tasks.filter((task) =>
+    task.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   useEffect(() => {
     const localTasks = localStorage.getItem("tasks");
@@ -53,7 +42,7 @@ const TaskManagementPage = () => {
     }
   }, []);
 
-  const handleSubmitTask = (values: TaskType) => {
+  const handleCreateTask = (values: TaskType) => {
     const highestId =
       tasks.length > 0 ? Math.max(...tasks.map((task) => task.taskId)) : 0;
 
@@ -86,77 +75,75 @@ const TaskManagementPage = () => {
     toast.success("Task have been removed!");
   };
 
-  const handleEditTask = (task: TaskType) => {
-    console.log(task);
+  const handleEditTask = (editTask: TaskType) => {
+    openModal(
+      <div className="flex flex-col space-y-2">
+        <h2 className="text-2xl font-bold mb-4">Edit your task</h2>
+        <TaskForm
+          editTask={editTask}
+          onFinish={(values) => handleUpdateTask(editTask.taskId, values)}
+          onCancel={closeModal}
+        />
+      </div>
+    );
+  };
+
+  const handleUpdateTask = (editTaskId: number, values: TaskType) => {
+    const updatedTasks = tasks.map((task) =>
+      task.taskId === editTaskId
+        ? { ...task, ...values, taskId: task.taskId }
+        : task
+    );
+    setTasks(updatedTasks);
+    localStorage.setItem("tasks", JSON.stringify(updatedTasks));
+    toast.success("Task updated!");
+    closeModal();
   };
 
   const handleOpenModal = () => {
     openModal(
       <div className="flex flex-col space-y-2">
         <h2 className="text-2xl font-bold mb-4">Add your Task</h2>
-        <Form
-          form={form}
-          layout="vertical"
-          name="task_form"
-          clearOnDestroy
-          onFinish={handleSubmitTask}
-        >
-          <Form.Item
-            id="title"
-            label="Task Title"
-            name="title"
-            rules={[{ required: true, message: "Please input your Title!" }]}
-          >
-            <Input placeholder="Task title" />
-          </Form.Item>
-          <Form.Item id="description" label="Description" name="description">
-            <Input.TextArea />
-          </Form.Item>
-          <Form.Item id="dateRange" label="Due Date" name="dateRange">
-            <DatePicker
-              disabledDate={(current) =>
-                current && current.toDate() < new Date(minDate)
-              }
-            />
-          </Form.Item>
-          <Form.Item id="category" label="Category/Tags" name="category">
-            <Select
-              style={{ width: "100%" }}
-              placeholder="Category"
-              options={categoryOptions}
-            />
-          </Form.Item>
-          <Form.Item
-            id="status"
-            label="Status"
-            name="status"
-            rules={[
-              { required: true, message: "Please select your task status!" },
-            ]}
-          >
-            <Radio.Group
-              block
-              options={statusOptions}
-              optionType="button"
-              buttonStyle="outline"
-            />
-          </Form.Item>
-          <Form.Item>
-            <Button type="primary" htmlType="submit" className="w-full my-2">
-              Submit
-            </Button>
-            <Button
-              type="default"
-              htmlType="button"
-              className="w-full"
-              onClick={closeModal}
-            >
-              Cancel
-            </Button>
-          </Form.Item>
-        </Form>
+        <TaskForm onFinish={handleCreateTask} onCancel={closeModal} />
       </div>
     );
+  };
+
+  const handleSort = () => {
+    const newSortDirection = sortDirection === "asc" ? "desc" : "asc";
+
+    setSortDirection(newSortDirection);
+
+    const sortedTasks = [...tasks].sort((a, b) => {
+      const dateA = new Date(a.dateRange).getTime();
+      const dateB = new Date(b.dateRange).getTime();
+
+      return sortDirection === "asc" ? dateA - dateB : dateB - dateA;
+    });
+
+    setTasks(sortedTasks);
+  };
+
+  const handleToggleStatus = (taskId: number) => {
+    const statusMapped = ["Todo", "On Process", "Done"];
+
+    const currentStatus = tasks.find((task) => task.taskId === taskId)?.status;
+
+    if (!currentStatus) return;
+
+    const statusIndex = statusMapped.indexOf(currentStatus);
+
+    const newStatus =
+      statusIndex + 1 > statusMapped.length - 1
+        ? statusMapped[0]
+        : statusMapped[statusIndex + 1];
+
+    const updatedTasks = tasks.map((task) =>
+      task.taskId === taskId ? { ...task, status: newStatus } : task
+    );
+
+    setTasks(updatedTasks);
+    localStorage.setItem("tasks", JSON.stringify(updatedTasks));
   };
 
   return (
@@ -171,33 +158,61 @@ const TaskManagementPage = () => {
       </header>
       <Flex gap="middle" align="center" justify="space-between">
         <div className="flex items-center justify-between">
-          <span>My Task</span>
+          <span className="w-[120px] font-semibold">My Task</span>
+          <Input
+            placeholder="Search..."
+            allowClear
+            suffix={<SearchOutlined />}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
         <Flex gap="middle" align="center">
-          <Button icon={<FilterOutlined />}>Filter</Button>
-          <Button icon={<SortAscendingOutlined />}>Sort</Button>
+          <Button
+            icon={
+              sortDirection === "asc" ? (
+                <SortAscendingOutlined />
+              ) : (
+                <SortDescendingOutlined />
+              )
+            }
+            onClick={handleSort}
+          >
+            Sort
+          </Button>
           <Button
             type="primary"
             icon={<PlusOutlined />}
             iconPosition="start"
-            onClick={handleOpenModal}
+            onClick={() => handleOpenModal()}
           >
             New Task
           </Button>
         </Flex>
       </Flex>
 
-      <div className="">
+      <div>
         <ul>
-          {tasks.map((task, index) => (
-            <li key={index}>
-              <TaskItem
-                task={task}
-                onDeleteTask={handleDeleteTask}
-                onEditTask={handleEditTask}
-              />
-            </li>
-          ))}
+          {filteredTasks.length > 0 ? (
+            filteredTasks.map((task, index) => (
+              <li key={index}>
+                <TaskItem
+                  task={task}
+                  onDeleteTask={handleDeleteTask}
+                  onEditTask={handleEditTask}
+                  toggleStatus={handleToggleStatus}
+                />
+              </li>
+            ))
+          ) : (
+            <div className="text-center pt-24 flex flex-col items-center justify-center gap-1">
+              <QuestionCircleOutlined className="text-gray-500 text-4xl" />
+              <p className="text-2xl text-slate-500">
+                {searchQuery
+                  ? "No matching tasks found"
+                  : "Try adding some tasks"}
+              </p>
+            </div>
+          )}
         </ul>
       </div>
     </div>

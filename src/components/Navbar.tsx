@@ -7,11 +7,20 @@ import {
   PieChartOutlined,
 } from "@ant-design/icons";
 import { NavLink } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { format } from "date-fns";
 
 const Navbar = () => {
   const [isFullWidth, setIsFullWidth] = useState(true);
+  const [time, setTime] = useState<Date>(new Date());
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   return (
     <nav
@@ -25,7 +34,7 @@ const Navbar = () => {
             isFullWidth ? "" : "text-sm"
           }`}
         >
-          {format(new Date(), "p")}
+          {format(time, "p")}
         </h1>
 
         <NavLink
