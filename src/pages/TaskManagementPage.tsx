@@ -14,6 +14,7 @@ import TaskItem from "../components/taskManagement/TaskItem";
 import toast from "react-hot-toast";
 
 import TaskForm from "../components/taskManagement/TaskForm";
+import Swal from "sweetalert2";
 
 export type TaskType = {
   taskId: number;
@@ -56,23 +57,44 @@ const TaskManagementPage = () => {
   };
 
   const handleDeleteTask = (taskId: number) => {
-    if (!taskId) toast.error("Something went wrong.");
-
-    setTasks((tasks) => tasks.filter((task) => task.taskId !== taskId));
-
-    const currentLocalTasks = localStorage.getItem("tasks");
-
-    if (!currentLocalTasks) {
+    if (!taskId) {
       toast.error("Something went wrong.");
       return;
     }
 
-    let currentTasks: TaskType[] = JSON.parse(currentLocalTasks);
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setTasks((tasks) => tasks.filter((task) => task.taskId !== taskId));
 
-    currentTasks = currentTasks.filter((task) => task.taskId !== taskId);
+        const currentLocalTasks = localStorage.getItem("tasks");
 
-    localStorage.setItem("tasks", JSON.stringify(currentTasks));
-    toast.success("Task have been removed!");
+        if (!currentLocalTasks) {
+          toast.error("Something went wrong.");
+          return;
+        }
+
+        let currentTasks: TaskType[] = JSON.parse(currentLocalTasks);
+
+        currentTasks = currentTasks.filter((task) => task.taskId !== taskId);
+
+        localStorage.setItem("tasks", JSON.stringify(currentTasks));
+
+        Swal.fire({
+          title: "Deleted!",
+          text: "Your file has been deleted.",
+          icon: "success",
+          confirmButtonColor: "#A5DC86",
+        });
+      }
+    });
   };
 
   const handleEditTask = (editTask: TaskType) => {
