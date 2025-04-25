@@ -78,10 +78,12 @@ const TaskItem = ({
         } ${task.status === "Done" && "text-green-500"}`}
       >
         <ClockCircleOutlined />
-        {daysDiff != 0 && task.status === "Done"
+        {daysDiff >= 0 && task.status === "Done"
           ? `Done on Time`
           : daysDiff < 0
           ? `${Math.abs(daysDiff)} Days Late`
+          : daysDiff === 0
+          ? `Last day !!`
           : `${daysDiff} Days left`}
       </p>
     );

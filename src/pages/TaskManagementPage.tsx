@@ -8,13 +8,17 @@ import {
 import { Button, Flex, Input } from "antd";
 import { format } from "date-fns";
 import { useModal } from "../context/ModalContext";
+import React, { Suspense, useEffect, useState } from "react";
 
-import { useEffect, useState } from "react";
-import TaskItem from "../components/taskManagement/TaskItem";
 import toast from "react-hot-toast";
-
-import TaskForm from "../components/taskManagement/TaskForm";
 import Swal from "sweetalert2";
+
+const TaskItem = React.lazy(
+  () => import("../components/taskManagement/TaskItem")
+);
+const TaskForm = React.lazy(
+  () => import("../components/taskManagement/TaskForm")
+);
 
 export type TaskType = {
   taskId: number;
@@ -126,7 +130,9 @@ const TaskManagementPage = () => {
     openModal(
       <div className="flex flex-col space-y-2">
         <h2 className="text-2xl font-bold mb-4">Add your Task</h2>
-        <TaskForm onFinish={handleCreateTask} onCancel={closeModal} />
+        <Suspense fallback={<div>Loading...</div>}>
+          <TaskForm onFinish={handleCreateTask} onCancel={closeModal} />
+        </Suspense>
       </div>
     );
   };
@@ -217,12 +223,14 @@ const TaskManagementPage = () => {
           {filteredTasks.length > 0 ? (
             filteredTasks.map((task, index) => (
               <li key={index}>
-                <TaskItem
-                  task={task}
-                  onDeleteTask={handleDeleteTask}
-                  onEditTask={handleEditTask}
-                  toggleStatus={handleToggleStatus}
-                />
+                <Suspense fallback={<div>Loading...</div>}>
+                  <TaskItem
+                    task={task}
+                    onDeleteTask={handleDeleteTask}
+                    onEditTask={handleEditTask}
+                    toggleStatus={handleToggleStatus}
+                  />
+                </Suspense>
               </li>
             ))
           ) : (

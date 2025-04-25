@@ -1,11 +1,13 @@
 import { Button, Divider, Flex, Form, Input } from "antd";
-import { useEffect, useState } from "react";
-import PriorityCard from "../components/todo/PriorityCard";
+import React, { Suspense, useEffect, useState } from "react";
 import { MinusCircleOutlined } from "@ant-design/icons";
 import toast from "react-hot-toast";
-import TodoItem from "../components/todo/TodoItem";
 import Swal from "sweetalert2";
 
+const PriorityCard = React.lazy(
+  () => import("../components/todo/PriorityCard")
+);
+const TodoItem = React.lazy(() => import("../components/todo/TodoItem"));
 export interface TodoItemType {
   id: number;
   title: string;
@@ -150,9 +152,11 @@ const TodoPage = () => {
         </div>
 
         <Flex gap={8}>
-          <PriorityCard />
-          <PriorityCard />
-          <PriorityCard />
+          <Suspense fallback={<div>Loading...</div>}>
+            <PriorityCard />
+            <PriorityCard />
+            <PriorityCard />
+          </Suspense>
         </Flex>
       </Flex>
 
@@ -167,14 +171,16 @@ const TodoPage = () => {
           })
           .map((todo) => (
             <li key={todo.id}>
-              <TodoItem
-                todo={todo}
-                onCompleted={handleCompletedTodo}
-                onPriorityChange={handlePriorityChanged}
-                onDelete={handleDeleteTodo}
-                onEdit={handleEditTodo}
-              />
-              <Divider />
+              <Suspense fallback={<div>Loading...</div>}>
+                <TodoItem
+                  todo={todo}
+                  onCompleted={handleCompletedTodo}
+                  onPriorityChange={handlePriorityChanged}
+                  onDelete={handleDeleteTodo}
+                  onEdit={handleEditTodo}
+                />
+                <Divider />
+              </Suspense>
             </li>
           ))}
       </ul>
