@@ -16,10 +16,29 @@ nav a:hover {
    color: #fff;
    text-decoration: none;
    background-color: #2D66E4;
-  
+
 }
 
 nav a.active {
    color: #FFF;
    background-color: #2D66E4;
+}
+
+::-webkit-scrollbar {
+   width: 10px;
+}
+
+::-webkit-scrollbar-track-piece {
+   background-color: #FFF;
+}
+
+::-webkit-scrollbar-thumb {
+   background-color: #CBCBCB;
+   outline: 2px solid #FFF;
+   outline-offset: -2px;
+   border: .1px solid #B7B7B7;
+}
+
+::-webkit-scrollbar-thumb:hover {
+   background-color: #909090;
 }

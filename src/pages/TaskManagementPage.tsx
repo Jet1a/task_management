@@ -5,7 +5,7 @@ import {
   SortAscendingOutlined,
   SortDescendingOutlined,
 } from "@ant-design/icons";
-import { Button, Flex, Input } from "antd";
+import { Button, Flex, Input, Skeleton } from "antd";
 import { format } from "date-fns";
 import { useModal } from "../context/ModalContext";
 import React, { Suspense, useEffect, useState } from "react";
@@ -24,7 +24,8 @@ export type TaskType = {
   taskId: number;
   title: string;
   description: string;
-  dateRange: Date;
+  dateRange: Date | string
+  createdOn: Date | string
   category: string;
   status: string;
 };
@@ -51,7 +52,11 @@ const TaskManagementPage = () => {
     const highestId =
       tasks.length > 0 ? Math.max(...tasks.map((task) => task.taskId)) : 0;
 
-    const newTasks = { ...values, taskId: highestId + 1 };
+    const newTasks = {
+      ...values,
+      taskId: highestId + 1,
+      createdOn: new Date(),
+    };
 
     const updatedTasks = [...tasks, newTasks];
     setTasks(updatedTasks);
@@ -176,7 +181,7 @@ const TaskManagementPage = () => {
 
   return (
     <div className="p-2">
-      <header className="flex flex-col space-y-2 mb-8">
+      <header className="flex flex-col space-y-2 mb-8 w-full">
         <span>{format(new Date(), "EEEE, do MMMM")}</span>
         <h1 className="text-4xl font-bold">Task Management</h1>
         <p className="w-[500px] text-slate-600">
@@ -223,7 +228,16 @@ const TaskManagementPage = () => {
           {filteredTasks.length > 0 ? (
             filteredTasks.map((task, index) => (
               <li key={index}>
-                <Suspense fallback={<div>Loading...</div>}>
+                <Suspense
+                  fallback={
+                    <Skeleton.Input
+                      block
+                      active
+                      size="large"
+                      style={{ marginTop: "18px", padding: "40px 0" }}
+                    />
+                  }
+                >
                   <TaskItem
                     task={task}
                     onDeleteTask={handleDeleteTask}

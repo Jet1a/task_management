@@ -24,8 +24,8 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`container transition-all duration-300 overflow-hidden min-h-screen p-4 border-r border-gray-200 flex flex-col justify-between ${
-        isFullWidth ? "w-64" : "w-20"
+      className={`transition-all duration-300 overflow-hidden min-h-screen p-4 border-r border-gray-200 flex flex-col justify-between ${
+        isFullWidth ? "min-w-50" : "w-20"
       }`}
     >
       <Flex gap="middle" vertical className="w-full">
@@ -84,16 +84,16 @@ const Navbar = () => {
             To-do List
           </span>
         </NavLink>
-      </Flex>
 
-      <div className="p-4 ml-auto">
-        <button
-          onClick={() => setIsFullWidth((prev) => !prev)}
-          className="cursor-pointer opacity-50 hover:opacity-100 transition-opacity"
-        >
-          {isFullWidth ? <DoubleLeftOutlined /> : <DoubleRightOutlined />}
-        </button>
-      </div>
+        <div className="p-4 ml-auto">
+          <button
+            onClick={() => setIsFullWidth((prev) => !prev)}
+            className="cursor-pointer opacity-50 hover:opacity-100 transition-opacity"
+          >
+            {isFullWidth ? <DoubleLeftOutlined /> : <DoubleRightOutlined />}
+          </button>
+        </div>
+      </Flex>
     </nav>
   );
 };

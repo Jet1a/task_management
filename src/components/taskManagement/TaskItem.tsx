@@ -65,7 +65,7 @@ const TaskItem = ({
   };
 
   const formatDateRange = () => {
-    const currentDate = new Date();
+    const currentDate = new Date(task.createdOn);
     const endDate = new Date(task.dateRange);
 
     const dateDiff = endDate.getTime() - currentDate.getTime();
@@ -176,16 +176,18 @@ const TaskItem = ({
   };
 
   return (
-    <div className="py-4 px-8 mt-6 flex items-center justify-between rounded-lg shadow-lg border border-slate-100 transition-all duration-300 hover:shadow-xl">
+    <div className="px-2 py-4 xl:py-4 xl:px-8 mt-6 flex items-center justify-between rounded-lg shadow-lg border border-slate-100 transition-all duration-300 hover:shadow-xl">
       <div
         className="flex flex-col cursor-pointer shrink-0 grow-0 w-64"
         onClick={handleTaskModalOpen}
       >
-        <h2 className="text-xl font-semibold truncate">{task.title}</h2>
-        <p className="text-md text-slate-600 truncate">{task.description}</p>
+        <h2 className="text-lg xl:text-xl font-semibold truncate">
+          {task.title}
+        </h2>
+        <p className="text-sm xl:text-md text-slate-600 truncate">{task.description}</p>
       </div>
 
-      <div className="flex items-center justify-start gap-2 text-sm w-[300px]">
+      <div className="flex items-center justify-start gap-2 text-xs xl:text-sm w-[300px]">
         {categoryMapped()}
         {statusMapped()}
       </div>

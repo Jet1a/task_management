@@ -1,6 +1,6 @@
-import { Button, Divider, Flex, Form, Input } from "antd";
+import { Button, Divider, Flex, Form, Input, Skeleton } from "antd";
 import React, { Suspense, useEffect, useState } from "react";
-import { MinusCircleOutlined } from "@ant-design/icons";
+import { MinusCircleOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 
@@ -22,10 +22,29 @@ type TodoFormValues = {
 const TodoPage = () => {
   const [todos, setTodos] = useState<TodoItemType[]>([]);
   const [greeting, setGreeting] = useState("");
+  const [priorityCount, setPriorityCount] = useState({
+    low: 0,
+    medium: 0,
+    high: 0,
+  });
+
+  const [totalCount, setTotalCount] = useState({
+    low: 0,
+    medium: 0,
+    high: 0,
+  });
 
   const [form] = Form.useForm<TodoFormValues>();
 
   useEffect(() => {
+    const localTodos = localStorage.getItem("todos");
+
+    if (localTodos && JSON.parse(localTodos)) {
+      const parsedTodos = JSON.parse(localTodos);
+      setTodos(parsedTodos);
+      updatePriorityCounts(parsedTodos);
+    }
+
     const currentTime = new Date().getHours();
 
     if (currentTime >= 17) {
@@ -35,13 +54,36 @@ const TodoPage = () => {
     } else {
       setGreeting("Good Morning");
     }
-
-    const localTodos = localStorage.getItem("todos");
-
-    if (localTodos && JSON.parse(localTodos)) {
-      setTodos(JSON.parse(localTodos));
-    }
   }, []);
+
+  const updatePriorityCounts = (todoList: TodoItemType[]) => {
+    const totals = {
+      low: 0,
+      medium: 0,
+      high: 0,
+    };
+
+    const counts = {
+      low: 0,
+      medium: 0,
+      high: 0,
+    };
+
+    todoList.forEach((todo) => {
+      if (todo.priority === "low") totals.low++;
+      else if (todo.priority === "medium") totals.medium++;
+      else if (todo.priority === "high") totals.high++;
+
+      if (todo.completed) {
+        if (todo.priority === "low") counts.low++;
+        else if (todo.priority === "medium") counts.medium++;
+        else if (todo.priority === "high") counts.high++;
+      }
+    });
+
+    setPriorityCount(counts);
+    setTotalCount(totals);
+  };
 
   const handleSubmitTodo = (values: TodoFormValues) => {
     const { todos_item } = values;
@@ -63,6 +105,7 @@ const TodoPage = () => {
 
     const updatedTodos = [...todos, ...newTodos];
     setTodos(updatedTodos);
+    updatePriorityCounts(updatedTodos);
 
     toast.success("Task(s) added successfully");
     localStorage.setItem("todos", JSON.stringify(updatedTodos));
@@ -76,6 +119,7 @@ const TodoPage = () => {
     );
 
     setTodos(completedTodo);
+    updatePriorityCounts(completedTodo);
     localStorage.setItem("todos", JSON.stringify(completedTodo));
     toast.success("Task completed!");
   };
@@ -85,6 +129,7 @@ const TodoPage = () => {
       todo.id === id ? { ...todo, priority: value } : todo
     );
     setTodos(editedTodo);
+    updatePriorityCounts(editedTodo);
     localStorage.setItem("todos", JSON.stringify(editedTodo));
   };
 
@@ -116,6 +161,7 @@ const TodoPage = () => {
         currentTodos = currentTodos.filter((todo) => todo.id !== id);
 
         setTodos(currentTodos);
+        updatePriorityCounts(currentTodos);
         localStorage.setItem("todos", JSON.stringify(currentTodos));
 
         Swal.fire({
@@ -144,45 +190,79 @@ const TodoPage = () => {
   };
 
   return (
-    <div className="p-2">
-      <Flex vertical gap={18}>
+    <div className="p-4">
+      <Flex vertical gap={14}>
         <div>
           <h1 className="text-4xl font-bold">{greeting}</h1>
           <p className="text-xl font-light ">What do you plan to do today?</p>
         </div>
 
-        <Flex gap={8}>
-          <Suspense fallback={<div>Loading...</div>}>
-            <PriorityCard />
-            <PriorityCard />
-            <PriorityCard />
+        <Flex gap={20}>
+          <Suspense
+            fallback={
+              <>
+                <Skeleton.Node active style={{ width: 200 }} />
+                <Skeleton.Node active style={{ width: 200 }} />
+                <Skeleton.Node active style={{ width: 200 }} />
+              </>
+            }
+          >
+            <PriorityCard
+              priority="low"
+              count={priorityCount.low}
+              totalCount={totalCount.low}
+            />
+            <PriorityCard
+              priority="medium"
+              count={priorityCount.medium}
+              totalCount={totalCount.medium}
+            />
+            <PriorityCard
+              priority="high"
+              count={priorityCount.high}
+              totalCount={totalCount.high}
+            />
           </Suspense>
         </Flex>
       </Flex>
 
-      <Flex style={{ margin: "2rem 0" }} align="center">
-        <span className="w-[120px] text-lg font-semibold">Todo Task</span>
-      </Flex>
+      <p className="w-[120px] mt-6 text-lg font-semibold">Todo Task</p>
 
       <ul>
-        {todos
-          .sort((a, b) => {
-            return b.completed === a.completed ? 0 : b.completed ? -1 : 1;
-          })
-          .map((todo) => (
-            <li key={todo.id}>
-              <Suspense fallback={<div>Loading...</div>}>
-                <TodoItem
-                  todo={todo}
-                  onCompleted={handleCompletedTodo}
-                  onPriorityChange={handlePriorityChanged}
-                  onDelete={handleDeleteTodo}
-                  onEdit={handleEditTodo}
-                />
-                <Divider />
-              </Suspense>
-            </li>
-          ))}
+        {todos.length > 0 ? (
+          todos
+            .sort((a, b) => {
+              return b.completed === a.completed ? 0 : b.completed ? -1 : 1;
+            })
+            .map((todo) => (
+              <li key={todo.id}>
+                <Suspense
+                  fallback={
+                    <Skeleton.Input
+                      block
+                      active
+                      size="large"
+                      style={{ marginTop: "12px", padding: "20px 0" }}
+                    />
+                  }
+                >
+                  <TodoItem
+                    todo={todo}
+                    onCompleted={handleCompletedTodo}
+                    onPriorityChange={handlePriorityChanged}
+                    onDelete={handleDeleteTodo}
+                    onEdit={handleEditTodo}
+                  />
+                  <Divider />
+                </Suspense>
+              </li>
+            ))
+        ) : (
+          <div className="text-center flex flex-col items-center justify-center gap-1">
+            <QuestionCircleOutlined className="text-gray-500 text-4xl" />
+            <p className="text-xl text-slate-500">Try adding some todo</p>
+          </div>
+        )}
       </ul>
 
       <Form
