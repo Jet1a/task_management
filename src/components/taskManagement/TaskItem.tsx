@@ -65,7 +65,7 @@ const TaskItem = ({
   };
 
   const formatDateRange = () => {
-    const currentDate = new Date(task.createdOn);
+    const currentDate = new Date();
     const endDate = new Date(task.dateRange);
 
     const dateDiff = endDate.getTime() - currentDate.getTime();
@@ -80,11 +80,13 @@ const TaskItem = ({
         <ClockCircleOutlined />
         {daysDiff >= 0 && task.status === "Done"
           ? `Done on Time`
+          : daysDiff > 0
+          ? `${Math.abs(daysDiff)} Days Left`
           : daysDiff < 0
-          ? `${Math.abs(daysDiff)} Days Late`
+          ? `${Math.abs(daysDiff)} Days late`
           : daysDiff === 0
-          ? `Last day !!`
-          : `${daysDiff} Days left`}
+          ? "Last day!!!"
+          : ""}
       </p>
     );
   };
@@ -184,7 +186,9 @@ const TaskItem = ({
         <h2 className="text-lg xl:text-xl font-semibold truncate">
           {task.title}
         </h2>
-        <p className="text-sm xl:text-md text-slate-600 truncate">{task.description}</p>
+        <p className="text-sm xl:text-md text-slate-600 truncate">
+          {task.description}
+        </p>
       </div>
 
       <div className="flex items-center justify-start gap-2 text-xs xl:text-sm w-[300px]">
